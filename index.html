@@ -114,12 +114,23 @@
 <body>
 <div class="container">
 
+  <!-- XFER FROM -->
   <label for="xferFrom">xfer from:</label>
-  <input type="text" id="xferFrom">
+  <select id="xferFrom" onchange="toggleCallerName()">
+    <option value="">-- select an option --</option>
+    <option value="internal agt">internal agt</option>
+    <option value="plan">plan</option>
+    <option value="supervisor">supervisor</option>
+    <option value="other">other</option>
+  </select>
 
-  <label for="callerName">caller name:</label>
-  <input type="text" id="callerName">
+  <!-- CALLER NAME (HIDDEN BY DEFAULT) -->
+  <div id="callerNameContainer" style="display:none;">
+    <label for="callerName">caller name:</label>
+    <input type="text" id="callerName">
+  </div>
 
+  <!-- TYPE -->
   <label for="type">type:</label>
   <select id="type">
     <option value="">-- select an option --</option>
@@ -134,12 +145,15 @@
     <option value="third party">third party</option>
   </select>
 
+  <!-- REASON -->
   <label for="reason">reason for call:</label>
   <input type="text" id="reason">
 
+  <!-- RX -->
   <label for="rx">rx:</label>
   <input type="text" id="rx">
 
+  <!-- RESOLUTION -->
   <label for="resolution">res:</label>
   <select id="resolution">
     <option value="">-- select an option --</option>
@@ -166,8 +180,10 @@
     <button onclick="generateNote()">submit</button>
     <button onclick="clearForm()">cancel</button>
   </div>
+
 </div>
 
+<!-- MODAL -->
 <div id="noteModal" class="modal">
   <div class="modal-content">
     <span class="close" onclick="closeModal()">&times;</span>
@@ -180,16 +196,40 @@
 </div>
 
 <script>
-  function generateNote() {
-    const note =
-`xfer from: ${xferFrom.value}
-caller name: ${callerName.value}
-type: ${type.value}
-reason for call: ${reason.value}
-rx: ${rx.value}
-res: ${resolution.value}${notes.value ? " / " + notes.value : ""}`;
+  function toggleCallerName() {
+    const xferVal = xferFrom.value;
+    const container = document.getElementById('callerNameContainer');
 
-    document.getElementById('output').value = note;
+    if (xferVal === 'internal agt' || xferVal === 'plan') {
+      container.style.display = 'block';
+    } else {
+      container.style.display = 'none';
+      callerName.value = '';
+    }
+  }
+
+  function generateNote() {
+    let lines = [];
+
+    const xferVal = xferFrom.value.trim();
+    const callerVal = callerName.value.trim();
+    const typeVal = type.value;
+    const reasonVal = reason.value.trim();
+    const rxVal = rx.value.trim();
+    const resVal = resolution.value;
+    const notesVal = notes.value.trim();
+
+    if (xferVal) lines.push(`xfer from: ${xferVal}`);
+    if (callerVal) lines.push(`caller name: ${callerVal}`);
+    if (typeVal) lines.push(`type: ${typeVal}`);
+    if (reasonVal) lines.push(`reason for call: ${reasonVal}`);
+    if (rxVal) lines.push(`rx: ${rxVal}`);
+
+    if (resVal) {
+      lines.push(`res: ${resVal}${notesVal ? " / " + notesVal : ""}`);
+    }
+
+    document.getElementById('output').value = lines.join('\n');
     document.getElementById('noteModal').style.display = 'block';
   }
 
@@ -202,6 +242,7 @@ res: ${resolution.value}${notes.value ? " / " + notes.value : ""}`;
   function clearForm() {
     document.querySelectorAll('input, textarea').forEach(el => el.value = '');
     document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+    document.getElementById('callerNameContainer').style.display = 'none';
   }
 
   function closeModal() {
