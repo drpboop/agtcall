@@ -124,13 +124,12 @@
     <option value="other">other</option>
   </select>
 
-  <!-- CALLER NAME (HIDDEN BY DEFAULT) -->
+  <!-- CALLER NAME -->
   <div id="callerNameContainer" style="display:none;">
     <label for="callerName">caller name:</label>
     <input type="text" id="callerName">
   </div>
 
-  <!-- TYPE -->
   <label for="type">type:</label>
   <select id="type">
     <option value="">-- select an option --</option>
@@ -145,15 +144,12 @@
     <option value="third party">third party</option>
   </select>
 
-  <!-- REASON -->
   <label for="reason">reason for call:</label>
   <input type="text" id="reason">
 
-  <!-- RX -->
   <label for="rx">rx:</label>
   <input type="text" id="rx">
 
-  <!-- RESOLUTION -->
   <label for="resolution">res:</label>
   <select id="resolution">
     <option value="">-- select an option --</option>
@@ -180,10 +176,8 @@
     <button onclick="generateNote()">submit</button>
     <button onclick="clearForm()">cancel</button>
   </div>
-
 </div>
 
-<!-- MODAL -->
 <div id="noteModal" class="modal">
   <div class="modal-content">
     <span class="close" onclick="closeModal()">&times;</span>
@@ -197,44 +191,46 @@
 
 <script>
   function toggleCallerName() {
-    const xferVal = xferFrom.value;
-    const container = document.getElementById('callerNameContainer');
+    const show =
+      xferFrom.value === 'internal agt' || xferFrom.value === 'plan';
 
-    if (xferVal === 'internal agt' || xferVal === 'plan') {
-      container.style.display = 'block';
-    } else {
-      container.style.display = 'none';
-      callerName.value = '';
-    }
+    document.getElementById('callerNameContainer').style.display =
+      show ? 'block' : 'none';
+
+    if (!show) callerName.value = '';
   }
 
   function generateNote() {
-    let lines = [];
+    const fields = [];
 
-    const xferVal = xferFrom.value.trim();
-    const callerVal = callerName.value.trim();
-    const typeVal = type.value;
-    const reasonVal = reason.value.trim();
-    const rxVal = rx.value.trim();
-    const resVal = resolution.value;
-    const notesVal = notes.value.trim();
+    if (xferFrom.value.trim())
+      fields.push(`xfer from: ${xferFrom.value}`);
 
-    if (xferVal) lines.push(`xfer from: ${xferVal}`);
-    if (callerVal) lines.push(`caller name: ${callerVal}`);
-    if (typeVal) lines.push(`type: ${typeVal}`);
-    if (reasonVal) lines.push(`reason for call: ${reasonVal}`);
-    if (rxVal) lines.push(`rx: ${rxVal}`);
+    if (callerName.value.trim())
+      fields.push(`caller name: ${callerName.value}`);
 
-    if (resVal) {
-      lines.push(`res: ${resVal}${notesVal ? " / " + notesVal : ""}`);
+    if (type.value)
+      fields.push(`type: ${type.value}`);
+
+    if (reason.value.trim())
+      fields.push(`reason for call: ${reason.value}`);
+
+    if (rx.value.trim())
+      fields.push(`rx: ${rx.value}`);
+
+    if (resolution.value) {
+      const resLine =
+        `res: ${resolution.value}` +
+        (notes.value.trim() ? ` // ${notes.value.trim()}` : '');
+      fields.push(resLine);
     }
 
-    document.getElementById('output').value = lines.join('\n');
+    // Join with " // " BETWEEN lines only (no trailing //)
+    document.getElementById('output').value = fields.join(' //\n');
     document.getElementById('noteModal').style.display = 'block';
   }
 
   function copyNote() {
-    const output = document.getElementById('output');
     output.select();
     document.execCommand('copy');
   }
