@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>note</title>
+  <title>regular agent call note</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
@@ -24,7 +24,6 @@
       width: 90%;
       max-width: 500px;
       margin: 0 auto;
-      box-sizing: border-box;
     }
 
     label, input, select, textarea {
@@ -37,7 +36,6 @@
       padding: 8px;
       border-radius: 5px;
       font-family: 'Century Gothic', sans-serif;
-      box-sizing: border-box;
     }
 
     label {
@@ -48,7 +46,6 @@
     textarea {
       min-height: 60px;
       resize: vertical;
-      line-height: 1.4;
     }
 
     .button-row {
@@ -65,7 +62,6 @@
       padding: 10px 15px;
       border-radius: 5px;
       cursor: pointer;
-      font-family: 'Century Gothic', sans-serif;
     }
 
     button:hover {
@@ -75,10 +71,7 @@
     .modal {
       display: none;
       position: fixed;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       background-color: rgba(0,0,0,0.8);
     }
 
@@ -106,7 +99,6 @@
       height: 180px;
       resize: none;
       background-color: #222;
-      color: #fff;
     }
   </style>
 </head>
@@ -114,23 +106,34 @@
 <body>
 <div class="container">
 
-  <!-- XFER FROM -->
-  <label for="xferFrom">xfer from:</label>
-  <select id="xferFrom" onchange="toggleCallerName()">
-    <option value="">-- select an option --</option>
-    <option value="internal agt">internal agt</option>
-    <option value="plan">plan</option>
-    <option value="supervisor">supervisor</option>
-    <option value="other">other</option>
+  <!-- CALLER NAME -->
+  <label for="callerName">caller name:</label>
+  <input type="text" id="callerName">
+
+  <!-- XFER YES / NO -->
+  <label>xfer:</label>
+  <select id="xferFlag" onchange="toggleXferFields()">
+    <option value="no">no</option>
+    <option value="yes">yes</option>
   </select>
 
-  <!-- CALLER NAME -->
-  <div id="callerNameContainer" style="display:none;">
-    <label for="callerName">caller name:</label>
-    <input type="text" id="callerName">
+  <!-- XFER SECTION -->
+  <div id="xferSection" style="display:none;">
+    <label for="xferFrom">xfer from:</label>
+    <select id="xferFrom">
+      <option value="">-- select an option --</option>
+      <option value="internal agt">internal agt</option>
+      <option value="plan">plan</option>
+      <option value="supervisor">supervisor</option>
+      <option value="other">other</option>
+    </select>
+
+    <label for="xferedCaller">xfered caller name:</label>
+    <input type="text" id="xferedCaller">
   </div>
 
-  <label for="type">type:</label>
+  <!-- CALLER TYPE -->
+  <label for="type">caller type:</label>
   <select id="type">
     <option value="">-- select an option --</option>
     <option value="alexa (ai)">alexa (ai)</option>
@@ -178,6 +181,7 @@
   </div>
 </div>
 
+<!-- MODAL -->
 <div id="noteModal" class="modal">
   <div class="modal-content">
     <span class="close" onclick="closeModal()">&times;</span>
@@ -190,44 +194,45 @@
 </div>
 
 <script>
-  function toggleCallerName() {
-    const show =
-      xferFrom.value === 'internal agt' || xferFrom.value === 'plan';
+  function toggleXferFields() {
+    const show = xferFlag.value === 'yes';
+    document.getElementById('xferSection').style.display = show ? 'block' : 'none';
 
-    document.getElementById('callerNameContainer').style.display =
-      show ? 'block' : 'none';
-
-    if (!show) callerName.value = '';
+    if (!show) {
+      xferFrom.value = '';
+      xferedCaller.value = '';
+    }
   }
 
   function generateNote() {
-    const fields = [];
-
-    if (xferFrom.value.trim())
-      fields.push(`xfer from: ${xferFrom.value}`);
+    const lines = [];
 
     if (callerName.value.trim())
-      fields.push(`caller name: ${callerName.value}`);
+      lines.push(`caller name: ${callerName.value.trim()}`);
+
+    if (xferFlag.value === 'yes' && xferFrom.value)
+      lines.push(`xfer from: ${xferFrom.value}`);
+
+    if (xferFlag.value === 'yes' && xferedCaller.value.trim())
+      lines.push(`xfered caller name: ${xferedCaller.value.trim()}`);
 
     if (type.value)
-      fields.push(`type: ${type.value}`);
+      lines.push(`caller type: ${type.value}`);
 
     if (reason.value.trim())
-      fields.push(`reason for call: ${reason.value}`);
+      lines.push(`reason for call: ${reason.value.trim()}`);
 
     if (rx.value.trim())
-      fields.push(`rx: ${rx.value}`);
+      lines.push(`rx: ${rx.value.trim()}`);
 
     if (resolution.value) {
-      const resLine =
-        `res: ${resolution.value}` +
-        (notes.value.trim() ? ` // ${notes.value.trim()}` : '');
-      fields.push(resLine);
+      let resLine = `res: ${resolution.value}`;
+      if (notes.value.trim()) resLine += ` / ${notes.value.trim()}`;
+      lines.push(resLine);
     }
 
-    // Join with " // " BETWEEN lines only (no trailing //)
-    document.getElementById('output').value = fields.join(' //\n');
-    document.getElementById('noteModal').style.display = 'block';
+    output.value = lines.join(' //\n');
+    noteModal.style.display = 'block';
   }
 
   function copyNote() {
@@ -238,11 +243,12 @@
   function clearForm() {
     document.querySelectorAll('input, textarea').forEach(el => el.value = '');
     document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
-    document.getElementById('callerNameContainer').style.display = 'none';
+    document.getElementById('xferSection').style.display = 'none';
+    xferFlag.value = 'no';
   }
 
   function closeModal() {
-    document.getElementById('noteModal').style.display = 'none';
+    noteModal.style.display = 'none';
   }
 </script>
 
