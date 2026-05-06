@@ -24,9 +24,13 @@
       width: 90%;
       max-width: 500px;
       margin: 0 auto;
+      box-sizing: border-box;
     }
 
-    label, input, select, textarea {
+    label,
+    input,
+    select,
+    textarea {
       display: block;
       width: 100%;
       margin-bottom: 10px;
@@ -36,6 +40,7 @@
       padding: 8px;
       border-radius: 5px;
       font-family: 'Century Gothic', sans-serif;
+      box-sizing: border-box;
     }
 
     label {
@@ -46,6 +51,7 @@
     textarea {
       min-height: 60px;
       resize: vertical;
+      line-height: 1.4;
     }
 
     .button-row {
@@ -62,6 +68,7 @@
       padding: 10px 15px;
       border-radius: 5px;
       cursor: pointer;
+      font-family: 'Century Gothic', sans-serif;
     }
 
     button:hover {
@@ -82,6 +89,7 @@
       width: 90%;
       max-width: 500px;
       border-radius: 10px;
+      box-sizing: border-box;
     }
 
     .close {
@@ -99,6 +107,7 @@
       height: 180px;
       resize: none;
       background-color: #222;
+      box-sizing: border-box;
     }
   </style>
 </head>
@@ -106,18 +115,15 @@
 <body>
 <div class="container">
 
-  <!-- CALLER NAME -->
   <label for="callerName">caller name:</label>
   <input type="text" id="callerName">
 
-  <!-- XFER YES / NO -->
-  <label>xfer:</label>
+  <label for="xferFlag">xfer:</label>
   <select id="xferFlag" onchange="toggleXferFields()">
     <option value="no">no</option>
     <option value="yes">yes</option>
   </select>
 
-  <!-- XFER SECTION -->
   <div id="xferSection" style="display:none;">
     <label for="xferFrom">xfer from:</label>
     <select id="xferFrom">
@@ -132,7 +138,6 @@
     <input type="text" id="xferedCaller">
   </div>
 
-  <!-- CALLER TYPE -->
   <label for="type">caller type:</label>
   <select id="type">
     <option value="">-- select an option --</option>
@@ -181,7 +186,6 @@
   </div>
 </div>
 
-<!-- MODAL -->
 <div id="noteModal" class="modal">
   <div class="modal-content">
     <span class="close" onclick="closeModal()">&times;</span>
